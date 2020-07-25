@@ -1,0 +1,8 @@
+/Binaries
+/.vs
+/Intermediate
+/Saved
+/ThirdParty
+/Build
+
+*.sln
