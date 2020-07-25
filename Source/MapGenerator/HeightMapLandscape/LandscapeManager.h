@@ -39,10 +39,10 @@ class MAPGENERATOR_API ULandscapeManager : public UBaseMapManager
 public:
 	
 	UPROPERTY(EditAnywhere, Category="LandScapeManager | Grid Parameters")
-	int NbrChunkX = 1;
+	int NbrChunkX = 5;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Grid Parameters")
-	int NbrChunkY = 1;
+	int NbrChunkY = 5;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Grid Parameters")
 	int ChunkSizeX = 64;
@@ -54,19 +54,19 @@ public:
 	float CellResolution = 80.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float HeightMultiplicator;
+	float HeightMultiplicator = 30000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float OctavesNumber;
+	int OctavesNumber = 5;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float Lacunarity;
+	float Lacunarity = 5.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float Persistance;
+	float Persistance = 0.1f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float Scale;
+	float Scale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	float SeaLevel;
@@ -84,7 +84,7 @@ public:
 	bool DrawGrid = false;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
-	bool AddNormals = false;
+	bool AddNormals = true;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
 	bool AddUVs = false;
