@@ -6,10 +6,12 @@
 #include "RuntimeMeshActor.h"
 #include "MapGenerator/Noise/FastNoise.h"
 #include "MapGenerator/HeightMapLandscape/LandscapeManager.h"
+#include "MapGenerator/Utils/EnumsUtils.h"
 #include "LandscapeChunk.generated.h"
 
-class ULandscapeManager;
-class FastNoise;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNoiseValueCalculated, int, X, int, Y, float&, Noise)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNoiseValueHeightUpdate, int, X, int, Y, float&, Noise)
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNoiseMapFinishGeneration, const TArray<float>&, HeightM)
 
 USTRUCT()
 struct FNoiseSettings {
@@ -48,6 +50,20 @@ struct FNoiseSettings {
 	UPROPERTY()
 	bool UseFallof;
 
+	UPROPERTY()
+	TEnumAsByte<ETerrainType> Type;
+
+	UPROPERTY()
+	int IslandSize;
+
+	UPROPERTY()
+	TEnumAsByte<NoiseType> TypeOfNoise;
+
+	UPROPERTY()
+	TEnumAsByte<FractalType> TypeOfFractal;
+	
+	FastNoise NoiseModule;
+
 	void LoadNoiseSettings(int X, int Y, ULandscapeManager* _Manager) {
 		HeightMultiplicator = _Manager->HeightMultiplicator;
 		Persistance = _Manager->Persistance;
@@ -59,6 +75,8 @@ struct FNoiseSettings {
 		SeaLevel = _Manager->SeaLevel;
 		UseFallof = _Manager->UseFallof;
 		Fallof = _Manager->Fallof;
+		Type = _Manager->TerrainType;
+		IslandSize = _Manager->IslandSizeInChunks;
 	}
 };
 
@@ -68,6 +86,8 @@ class MAPGENERATOR_API ALandscapeChunk : public ARuntimeMeshActor
 	GENERATED_BODY()
 public:
 
+	//typedef float
+	
 	UPROPERTY()
 	int ChunkX;
 
@@ -79,33 +99,36 @@ public:
 
 	UPROPERTY()
 	int ChunkSizeY;
-
-	UPROPERTY()
-	bool UseNormals;
-
-	UPROPERTY()
-	bool ShowNoiseLog;
 	
 	UPROPERTY()
 	FNoiseSettings NoiseSettings;
 	
 	UPROPERTY()
 	ULandscapeManager* Manager;
-	
-	/*UPROPERTY()
-	TArray<int> Densities;*/
 
-	FastNoise NoiseModule;
+	UPROPERTY()
+	TArray<float> HeightMap;
+
+	UPROPERTY(BlueprintAssignable)
+	FNoiseValueCalculated NoiseValueCalculated;
+
+	UPROPERTY(BlueprintAssignable)
+	FNoiseValueHeightUpdate NoiseValueHeightUpdate;
+
 	
 public:
 	
 	// Sets default values for this actor's properties
 	ALandscapeChunk();
 
-	void Generate();
-
-	float GetNoiseValue(int x, int y);
+	void Init();
 	
+	void GenerateMesh();
+	void GenerateNoiseMap();
+
+	float ApplyHeightMultiplicator(int x, int y);
+
+	float CalculateFallofMap(int x, int y);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

@@ -7,6 +7,7 @@
 #include "MapGenerator/Utils/EnumsUtils.h"
 #include "BaseMapManager.generated.h"
 
+class UBaseMapComponent;
 /**
  * 
  */
@@ -15,7 +16,7 @@ class MAPGENERATOR_API UBaseMapManager : public UObject
 {
 	GENERATED_BODY()
 public:
-
+	
 	bool Initialized = false;
 	EMapType MapType;
 

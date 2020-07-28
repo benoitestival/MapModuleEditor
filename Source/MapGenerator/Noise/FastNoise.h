@@ -28,6 +28,8 @@
 
 // VERSION: 0.4.1
 
+#include "MapGenerator/Utils/EnumsUtils.h"
+
 #ifndef FASTNOISE_H
 #define FASTNOISE_H
 
@@ -46,10 +48,10 @@ class FastNoise
 {
 public:
 	explicit FastNoise(int seed = 1337) { SetSeed(seed); CalculateFractalBounding(); }
-
-	enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
+	
+	//enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
 	enum Interp { Linear, Hermite, Quintic };
-	enum FractalType { FBM, Billow, RigidMulti };
+	//enum FractalType { FBM, Billow, RigidMulti };
 	enum CellularDistanceFunction { Euclidean, Manhattan, Natural };
 	enum CellularReturnType { CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div };
 

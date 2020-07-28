@@ -4,6 +4,7 @@
 #include "LandscapeChunk.h"
 #include "MapGenerator/Utils/MapEditorUtils.h"
 #include "Providers/RuntimeMeshProviderStatic.h"
+#include "MapGenerator/Objects/BaseLandscapeComponent.h"
 #include "MapGenerator/HeightMapLandscape/LandscapeManager.h"
 
 // Sets default values
@@ -14,56 +15,69 @@ ALandscapeChunk::ALandscapeChunk()
 
 }
 
-void ALandscapeChunk::Generate() {
-
-	NoiseModule.SetNoiseType(FastNoise::Perlin);
-	
+void ALandscapeChunk::Init() {
+	NoiseSettings.NoiseModule.SetNoiseType(NoiseType::Perlin);
 	Manager = UMapEditorUtils::TryGetLandscapeManager();
 	NoiseSettings.LoadNoiseSettings(ChunkX, ChunkY, Manager);
+	ChunkSizeX = Manager->ChunkSizeX;
+	ChunkSizeY = Manager->ChunkSizeY;
+	for (auto Component : Manager->MapComponents) {
+		Component->Initialize(this);
+	}
+	GenerateNoiseMap();
+	GenerateMesh();
+}
+
+void ALandscapeChunk::GenerateMesh() {
+
 	URuntimeMeshProviderStatic* StaticProvider = NewObject<URuntimeMeshProviderStatic>(this);
 	if (StaticProvider != nullptr) {
 		//Vertices are added in local and not in world
 
 		GetRuntimeMeshComponent()->Initialize(StaticProvider);
 
-		ChunkSizeX = Manager->ChunkSizeX;
-		ChunkSizeY = Manager->ChunkSizeY;
+		const bool UseNormals = Manager->AddNormals;
+		const bool UseUvs = Manager->AddUVs;
 
-		UseNormals = Manager->AddNormals;
-		ShowNoiseLog = Manager->ShowNoiseLog;
-		/*const int MeshSizeX = SizeX + 1;
-		const int MeshSizeY = SizeY + 1;
-		*/
 		const float CellResolution = Manager->CellResolution;
 		
 		TArray<FVector> Vertices;
-		Vertices.Reserve(ChunkSizeX * ChunkSizeY);
+		Vertices.Reserve((ChunkSizeX + 1) * (ChunkSizeY + 1));
 		TArray<int> Triangles;
-		Triangles.Reserve(ChunkSizeX * ChunkSizeY * 3 - ChunkSizeY);
+		Triangles.Reserve((ChunkSizeX + 1) * (ChunkSizeY + 1) * 3 - (ChunkSizeY + 1));
 		TArray<FColor> Colors;//No reserve because not using for now;
 		TArray<FVector> Normals;
 		Normals.Init(FVector(), (ChunkSizeX + 1) * (ChunkSizeY + 1));
 		TArray<FVector2D> UVs;
-		UVs.Reserve(ChunkSizeX * ChunkSizeY);
+		UVs.Reserve((ChunkSizeX + 1) * (ChunkSizeY + 1));
 		TArray<FRuntimeMeshTangent> Tangents;//No reserve because not using for now;
 
 		TArray<int> VerticesBottomLineCache;
-		VerticesBottomLineCache.Reserve(ChunkSizeY);
+		VerticesBottomLineCache.Reserve(ChunkSizeY + 1);
 		TArray<int> VerticesTopLineCache;
-		VerticesBottomLineCache.Reserve(ChunkSizeY);
+		VerticesBottomLineCache.Reserve(ChunkSizeY + 1);
 		
 		for (int y = 0; y < ChunkSizeY + 1; y++) {
-			const FVector Vertice = FVector(0, y * CellResolution, GetNoiseValue(0, y));
+			const FVector Vertice = FVector(0, y * CellResolution, ApplyHeightMultiplicator(0,y));
 			VerticesBottomLineCache.Add(Vertices.Add(Vertice));
+			if (UseUvs) {
+				UVs.Add(FVector2D(0.0f, (float)y / (float)ChunkSizeY));
+			}
 		}
 
 		for (int x = 0; x < ChunkSizeX; x++) {
 			
-			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, GetNoiseValue(x + 1, 0));
+			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, ApplyHeightMultiplicator(x,0));
+			if (UseUvs) {
+				UVs.Add(FVector2D((float)x / (float)ChunkSizeX, 0.0f));
+			}
 			VerticesTopLineCache.Add(Vertices.Add(FirstTopLineVert));
 			
 			for (int y = 0; y < ChunkSizeY; y++) {
-				const FVector VerticeTopToAdd = FVector((x + 1) * CellResolution, (y + 1) * CellResolution, GetNoiseValue(x + 1, y + 1));
+				const FVector VerticeTopToAdd = FVector((x + 1) * CellResolution, (y + 1) * CellResolution, ApplyHeightMultiplicator(x + 1,y + 1));
+				if (UseUvs) {
+					UVs.Add(FVector2D((float)x / (float)ChunkSizeX, (float)y / (float)ChunkSizeY));
+				}
 				VerticesTopLineCache.Add(Vertices.Add(VerticeTopToAdd));
 
 				Triangles.Add(VerticesBottomLineCache[y]);
@@ -81,8 +95,6 @@ void ALandscapeChunk::Generate() {
 					const FVector NormalForBottom = FVector::CrossProduct(AB, AC);
 					Normals[VerticesBottomLineCache[y]] = NormalForBottom.GetSafeNormal();
 				}
-				
-				
 			}
 
 			//Adding the extra normal at the end of the line
@@ -93,35 +105,21 @@ void ALandscapeChunk::Generate() {
 				Normals[VerticesBottomLineCache[ChunkSizeY]] = NormalForBottom.GetSafeNormal();
 			}
 	
-
 			VerticesBottomLineCache = VerticesTopLineCache;
 			VerticesTopLineCache.Empty();
 		}
 
-		//Adding normals for last line
-		//FVector OffsetDown = FVector(-CellResolution, 0.0f, 0.0f);
-		//for (int y = 0; y < SizeY ; y++) {
-		//	OffsetDown.Z = GetNoiseValue(SizeX - 1, y);
-		//	const FVector AB = Vertices[VerticesBottomLineCache[y + 1]] - Vertices[VerticesBottomLineCache[y]];
-		//	const FVector AC = FVector(Vertices[VerticesBottomLineCache[y + 1]] + OffsetDown) - Vertices[VerticesBottomLineCache[y]];
-		//	const FVector Normal = FVector::CrossProduct(AB, AC);
-		//	Normals[VerticesBottomLineCache[y]] = Normal.GetSafeNormal();
-		//}
-		////
-		////Adding last normal
-		//OffsetDown.Z = GetNoiseValue(SizeX - 1, SizeY - 1);
-		//const FVector AB = Vertices[VerticesBottomLineCache[SizeY - 2]] - Vertices[VerticesBottomLineCache[SizeY - 1]];
-		//const FVector AC = FVector(Vertices[VerticesBottomLineCache[SizeY - 1]] - OffsetDown) - Vertices[VerticesBottomLineCache[SizeY - 1]];
-		//const FVector Normal = FVector::CrossProduct(AB, AC);
-		//Normals[SizeY * SizeX - 1] = Normal.GetSafeNormal();
-		
+		StaticProvider->SetupMaterialSlot(0, TEXT("TriMat"), Manager->Material);
 		StaticProvider->CreateSectionFromComponents(0,0,0,Vertices, Triangles, Normals, UVs, Colors, Tangents, ERuntimeMeshUpdateFrequency::Infrequent, false);
 		
-	}
-	
+	}	
 }
 
-float ALandscapeChunk::GetNoiseValue(int x, int y) {
+void ALandscapeChunk::GenerateNoiseMap() {
+	
+	const bool ShowNoiseLog = Manager->ShowNoiseLog;
+	HeightMap.Empty();
+	HeightMap.Reserve((ChunkSizeX + 1) * (ChunkSizeY + 1));
 
 	if (NoiseSettings.NumOctaves == 0) {
 		NoiseSettings.NumOctaves = 1;
@@ -130,30 +128,53 @@ float ALandscapeChunk::GetNoiseValue(int x, int y) {
 	if (NoiseSettings.Scale == 0) {
 		NoiseSettings.Scale = 0.001f;
 	}
-	
-	float NoiseValue = 0.0f;
-	float Frequency = 1.0f;
-	float Amplitude = 1.0f;
-	
-	for (int o = 0; o < NoiseSettings.NumOctaves; o++) {
 
-		const int NewX = (x + NoiseSettings.XOffset) / NoiseSettings.Scale * Frequency;
-		const int NewY = (y + NoiseSettings.YOffset) / NoiseSettings.Scale * Frequency;
-		
-		const float Perlin = NoiseModule.GetPerlin(NewX, NewY);
-		if (ShowNoiseLog) {
-			UE_LOG(LogTemp, Warning, TEXT("Original Perlin Value : %f, for x: %d and y: %d"), Perlin, x, y);
+	for (int x = 0; x < ChunkSizeX + 1; x++) {
+		for (int y = 0; y < ChunkSizeY + 1; y++) {
+
+			float NoiseValue = 0.0f;
+			float Frequency = 1.0f;
+			float Amplitude = 1.0f;
+
+			for (int o = 0; o < NoiseSettings.NumOctaves; o++) {
+				const int NewX = (x + NoiseSettings.XOffset) / NoiseSettings.Scale * Frequency;
+				const int NewY = (y + NoiseSettings.YOffset) / NoiseSettings.Scale * Frequency;
+
+				const float Perlin = NoiseSettings.NoiseModule.GetPerlin(NewX, NewY);
+				if (ShowNoiseLog) {
+					UE_LOG(LogTemp, Warning, TEXT("Original Perlin Value : %f, for x: %d and y: %d"), Perlin, x, y);
+				}
+				
+				NoiseValue += Perlin * Amplitude;
+				FMath::Clamp(NoiseValue, -1.0f, 1.0f);
+				Amplitude *= NoiseSettings.Persistance;
+				Frequency *= NoiseSettings.Lacunarity;
+			}
+			
+			NoiseValue = (NoiseValue + 1) * 0.5;
+
+			
+			NoiseValueCalculated.Broadcast(x, y, NoiseValue);
+			HeightMap.Add(NoiseValue);
+			/*if (NoiseSettings.Type == ETerrainType::Island) {
+				NoiseValue = NoiseValue - CalculateFallofMap(x, y);
+				NoiseValue = FMath::Clamp(NoiseValue, 0.0f, 1.0f);
+			}*/
 		}
-		NoiseValue += Perlin * Amplitude;
-		Amplitude *= NoiseSettings.Persistance;
-		Frequency *= NoiseSettings.Lacunarity;
 	}
 	
+}
+
+
+
+float ALandscapeChunk::ApplyHeightMultiplicator(int x, int y){
+
+	const int index = x * (ChunkSizeY + 1) + y;
+	float NoiseValue = HeightMap[index];
 	if (NoiseSettings.UseFallof) {
-		if(NoiseSettings.Fallof != nullptr) {
+		if (NoiseSettings.Fallof != nullptr) {
 			const float FallofInfluence = NoiseSettings.Fallof->GetFloatValue(NoiseValue);
 			NoiseValue = NoiseValue * (NoiseSettings.HeightMultiplicator * FallofInfluence);
-
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("Select a curve"));
@@ -165,11 +186,28 @@ float ALandscapeChunk::GetNoiseValue(int x, int y) {
 			NoiseValue = NoiseSettings.SeaLevel;
 		}
 	}
+
+	NoiseValueHeightUpdate.Broadcast(x, y, NoiseValue);
+	HeightMap[index] = NoiseValue;
+
+	return NoiseValue;
+}
+
+
+float ALandscapeChunk::CalculateFallofMap(int x, int y) {
+
+	const int NewX = (x + NoiseSettings.XOffset)/* / NoiseSettings.IslandSize*/;
+	const int NewY = (y + NoiseSettings.YOffset)/* / NoiseSettings.IslandSize*/;
+
+	const float XVal = NewX / (float)(NoiseSettings.IslandSize * ChunkSizeX) * 2 - 1;
+	const float YVal = NewY / (float)(NoiseSettings.IslandSize * ChunkSizeY) * 2 - 1;
+
+	const float FallofValue = FMath::Max(FMath::Abs(XVal), FMath::Abs(YVal));
+
+	const float a = 3.0f;
+	const float b = 2.2f;
 	
-	/*if (ShowNoiseLog) {
-		UE_LOG(LogTemp, Warning, TEXT("End Perlin Value : %f, for x: %d and y: %d"), NoiseValue, x, y);
-	}*/
-	return NoiseValue ;
+	return FMath::Pow(FallofValue, a) / (FMath::Pow(FallofValue, a) + FMath::Pow(b - b * FallofValue, a));
 }
 
 

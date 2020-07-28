@@ -11,6 +11,7 @@
 
 ULandscapeManager::ULandscapeManager() {
 	MapType = EMapType::ProceduralLandscape;
+	/*CurveFloat'/Game/Helpers/FallofCurve.FallofCurve'*/
 }
 
 
@@ -35,7 +36,7 @@ void ULandscapeManager::Enter() {
 				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
-				LandscapeChunk->Generate();
+				LandscapeChunk->Init();
 				Chunks.Add(LandscapeChunk);
 			}
 		}
@@ -58,11 +59,12 @@ void ULandscapeManager::Leave() {
 void ULandscapeManager::Construct() {
 	
 	UE_LOG(LogTemp, Warning, TEXT("Landscape : Construct"));
+	
 	const int DesiredNumberOfChunks = NbrChunkX * NbrChunkY;
 	if (DesiredNumberOfChunks == Chunks.Num()) {
 		//Other property change need to refresh all map
 		for (auto Chunk : Chunks) {
-			Chunk->Generate();
+			Chunk->Init();
 		}
 	}
 	else {
@@ -88,7 +90,7 @@ void ULandscapeManager::Construct() {
 				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
-				LandscapeChunk->Generate();
+				LandscapeChunk->Init();
 				NewChunksArray.Add(LandscapeChunk);
 			}
 			//If the new array is shorter in Y need to delete chunks(possibly 0 iteration in this under scope)
@@ -105,7 +107,7 @@ void ULandscapeManager::Construct() {
 				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
-				LandscapeChunk->Generate();
+				LandscapeChunk->Init();
 				NewChunksArray.Add(LandscapeChunk);
 			}
 		}
@@ -159,7 +161,7 @@ void ULandscapeManager::Load() {
 		
 		ChunkSizeX = Chunks[0]->ChunkSizeX;
 		ChunkSizeY = Chunks[0]->ChunkSizeY;
-		AddNormals = Chunks[0]->UseNormals;
+		//AddNormals = Chunks[0]->UseNormals;
 	}
 }
 

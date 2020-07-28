@@ -6,9 +6,17 @@
 
 #include "MapGenerator/Objects/BaseMapManager.h"
 #include "Curves/CurveFloat.h"
+#include "Materials/MaterialInterface.h"
 #include "LandscapeManager.generated.h"
 
 class ALandscapeChunk;
+class UBaseLandscapeComponent;
+
+UENUM()
+enum ETerrainType{
+	InfinteLand = 0,
+	Island = 1
+};
 
 USTRUCT()
 struct FProcLandscapeCache {
@@ -54,6 +62,9 @@ public:
 	float CellResolution = 80.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
+	TEnumAsByte<ETerrainType> TerrainType = ETerrainType::InfinteLand;
+	
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	float HeightMultiplicator = 30000.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
@@ -69,25 +80,34 @@ public:
 	float Scale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float SeaLevel;
+	bool UseFallof;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	UCurveFloat* Fallof;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	bool UseFallof;
+	float SeaLevel = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
+	int IslandSizeInChunks = 2;
+
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
+	UMaterialInterface* Material;
 	
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
 	bool EnableCollision = false;
 
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
-	bool DrawGrid = false;
-
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
 	bool AddNormals = true;
 
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
 	bool AddUVs = false;
+
+	UPROPERTY(EditAnywhere, Instanced, Category="LandScapeManager | Components")
+	TArray<UBaseLandscapeComponent*> MapComponents;
+	
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
+	bool DrawGrid = false;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
 	bool ShowNoiseLog = false;

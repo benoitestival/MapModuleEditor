@@ -12,6 +12,11 @@ enum EMapType {
 	Volumetric3DLandscape = 1
 };
 
+UENUM()
+enum NoiseType { Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal };
+
+UENUM()
+enum FractalType { FBM, Billow, RigidMulti };
 
 UCLASS()
 class MAPGENERATOR_API UEnumsUtils : public UBlueprintFunctionLibrary
