@@ -4,14 +4,26 @@
 #include "LandscapeManager.h"
 #include "Engine/World.h"
 #include "MapGenerator/HeightMapLandscape/LandscapeChunk.h"
+#include "MapGenerator/Objects/BaseLandscapeComponent.h"
 #include "MapGenerator/Utils/MapEditorUtils.h"
+#include "UObject/ConstructorHelpers.h" 
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
 
 ULandscapeManager::ULandscapeManager() {
 	MapType = EMapType::ProceduralLandscape;
-	/*CurveFloat'/Game/Helpers/FallofCurve.FallofCurve'*/
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TerrainMaterial(TEXT("Material'/Game/Material/TerrainMaterial.TerrainMaterial'"));
+	if (TerrainMaterial.Succeeded()) {
+		Material = TerrainMaterial.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> FalloffCurve(TEXT("CurveFloat'/Game/Helpers/FallofCurve.FallofCurve'"));
+	if (TerrainMaterial.Succeeded()) {
+		Fallof = FalloffCurve.Object;
+	}
+
 }
 
 
@@ -59,6 +71,24 @@ void ULandscapeManager::Leave() {
 void ULandscapeManager::Construct() {
 	
 	UE_LOG(LogTemp, Warning, TEXT("Landscape : Construct"));
+
+	TArray<UBaseLandscapeComponent*> Temp;
+	for (auto Component : ComponentsCache) {
+		if (!MapComponents.Contains(Component)) {
+			if (Component != nullptr) {
+				Component->Remove(this);
+				Temp.Add(Component);
+			}
+		}
+	}
+	for (auto Component : Temp) {
+		ComponentsCache.Remove(Component);
+	}
+	for (auto Component : MapComponents) {
+		if (!ComponentsCache.Contains(Component)) {
+			ComponentsCache.Add(Component);
+		}
+	}
 	
 	const int DesiredNumberOfChunks = NbrChunkX * NbrChunkY;
 	if (DesiredNumberOfChunks == Chunks.Num()) {
@@ -168,3 +198,8 @@ void ULandscapeManager::Load() {
 FVector2D ULandscapeManager::FindSizeXYOfChunkArray(TArray<ALandscapeChunk*>& _Chunks) {
 	return FVector2D();
 }
+
+
+//void ULandscapeManager::ErodeTerrain() {
+//	
+//}

@@ -61,8 +61,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Grid Parameters")
 	float CellResolution = 80.0f;
 
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	TEnumAsByte<ETerrainType> TerrainType = ETerrainType::InfinteLand;
+	/*UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
+	TEnumAsByte<ETerrainType> TerrainType = ETerrainType::InfinteLand;*/
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	float HeightMultiplicator = 30000.0f;
@@ -80,17 +80,20 @@ public:
 	float Scale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	bool UseFallof;
-
-	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	UCurveFloat* Fallof;
+	float SeaLevel = 0.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float SeaLevel = 0.0f;
+	UCurveFloat* Fallof;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	int IslandSizeInChunks = 2;
 
+	UPROPERTY(EditAnywhere, Instanced, Category="LandScapeManager | Components")
+	TArray<UBaseLandscapeComponent*> MapComponents;
+
+	UPROPERTY()
+	TArray<UBaseLandscapeComponent*> ComponentsCache;
+	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
 	UMaterialInterface* Material;
 	
@@ -101,11 +104,8 @@ public:
 	bool AddNormals = true;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
-	bool AddUVs = false;
+	bool AddUVs = true;
 
-	UPROPERTY(EditAnywhere, Instanced, Category="LandScapeManager | Components")
-	TArray<UBaseLandscapeComponent*> MapComponents;
-	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
 	bool DrawGrid = false;
 	
@@ -131,6 +131,9 @@ public:
 	virtual void Construct() override;
 
 	virtual void Load() override;
+
+	/*UFUNCTION(BlueprintCallable, CallInEditor, Category= "LandScapeManager | Actions")
+	void ErodeTerrain();*/
 	
 	FVector2D FindSizeXYOfChunkArray(TArray<ALandscapeChunk*>& _Chunks);
 };

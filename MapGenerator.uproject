@@ -18,5 +18,12 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
+	],
+	"Plugins": [
+		{
+			"Name": "VoxelPlugin",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/fde6d27188c74d7a95cc27e1344c6de1"
+		}
 	]
 }

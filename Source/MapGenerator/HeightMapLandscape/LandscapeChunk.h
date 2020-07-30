@@ -9,8 +9,8 @@
 #include "MapGenerator/Utils/EnumsUtils.h"
 #include "LandscapeChunk.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNoiseValueCalculated, int, X, int, Y, float&, Noise)
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FNoiseValueHeightUpdate, int, X, int, Y, float&, Noise)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNoiseValueCalculated,TArray<float>&, HeightM, ALandscapeChunk*, Chunk);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNoiseValueHeightUpdate, TArray<float>&, HeightM, ALandscapeChunk*, Chunk);
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FNoiseMapFinishGeneration, const TArray<float>&, HeightM)
 
 USTRUCT()
@@ -73,9 +73,9 @@ struct FNoiseSettings {
 		XOffset = _Manager->ChunkSizeX * X;
 		YOffset = _Manager->ChunkSizeY * Y;
 		SeaLevel = _Manager->SeaLevel;
-		UseFallof = _Manager->UseFallof;
+		//UseFallof = _Manager->UseFallof;
 		Fallof = _Manager->Fallof;
-		Type = _Manager->TerrainType;
+		//Type = _Manager->TerrainType;
 		IslandSize = _Manager->IslandSizeInChunks;
 	}
 };
@@ -109,10 +109,10 @@ public:
 	UPROPERTY()
 	TArray<float> HeightMap;
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY()
 	FNoiseValueCalculated NoiseValueCalculated;
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY()
 	FNoiseValueHeightUpdate NoiseValueHeightUpdate;
 
 	

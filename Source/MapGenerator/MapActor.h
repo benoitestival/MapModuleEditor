@@ -31,6 +31,9 @@ public:
 	UFUNCTION()
 	void SwitchMapMode(TEnumAsByte<EMapType> MapType);
 
+	UFUNCTION(BlueprintCallable, CallInEditor, Category= "Actions")
+	void Erode();
+
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 };

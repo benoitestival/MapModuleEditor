@@ -3,6 +3,7 @@
 
 #include "MapActorDetailCustomization.h"
 #include "Editor/PropertyEditor/Public/PropertyEditorModule.h"
+#include "MapGenerator/MapActor.h"
 #include "Modules/ModuleManager.h"
 
 
@@ -18,6 +19,6 @@ void MapActorDetailCustomization::RegisterDetailsCustomization() {
 
 void MapActorDetailCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) {
 	//TODO
-
+	//AMapActor* 
 	
 }

@@ -22,7 +22,9 @@ void ALandscapeChunk::Init() {
 	ChunkSizeX = Manager->ChunkSizeX;
 	ChunkSizeY = Manager->ChunkSizeY;
 	for (auto Component : Manager->MapComponents) {
-		Component->Initialize(this);
+		if(Component != nullptr) {
+			Component->Initialize(this);
+		}
 	}
 	GenerateNoiseMap();
 	GenerateMesh();
@@ -67,16 +69,16 @@ void ALandscapeChunk::GenerateMesh() {
 
 		for (int x = 0; x < ChunkSizeX; x++) {
 			
-			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, ApplyHeightMultiplicator(x,0));
+			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, ApplyHeightMultiplicator(x + 1,0));
 			if (UseUvs) {
-				UVs.Add(FVector2D((float)x / (float)ChunkSizeX, 0.0f));
+				UVs.Add(FVector2D((float)(x + 1) / (float)ChunkSizeX, 0.0f));
 			}
 			VerticesTopLineCache.Add(Vertices.Add(FirstTopLineVert));
 			
 			for (int y = 0; y < ChunkSizeY; y++) {
 				const FVector VerticeTopToAdd = FVector((x + 1) * CellResolution, (y + 1) * CellResolution, ApplyHeightMultiplicator(x + 1,y + 1));
 				if (UseUvs) {
-					UVs.Add(FVector2D((float)x / (float)ChunkSizeX, (float)y / (float)ChunkSizeY));
+					UVs.Add(FVector2D((float)(x + 1) / (float)ChunkSizeX, (float)(y + 1) / (float)ChunkSizeY));
 				}
 				VerticesTopLineCache.Add(Vertices.Add(VerticeTopToAdd));
 
@@ -151,17 +153,14 @@ void ALandscapeChunk::GenerateNoiseMap() {
 				Frequency *= NoiseSettings.Lacunarity;
 			}
 			
-			NoiseValue = (NoiseValue + 1) * 0.5;
-
-			
-			NoiseValueCalculated.Broadcast(x, y, NoiseValue);
+			NoiseValue = (NoiseValue + 1) * 0.5;			
 			HeightMap.Add(NoiseValue);
-			/*if (NoiseSettings.Type == ETerrainType::Island) {
-				NoiseValue = NoiseValue - CalculateFallofMap(x, y);
-				NoiseValue = FMath::Clamp(NoiseValue, 0.0f, 1.0f);
-			}*/
+
 		}
 	}
+
+	NoiseValueCalculated.Broadcast(HeightMap, this);
+
 	
 }
 
@@ -171,14 +170,10 @@ float ALandscapeChunk::ApplyHeightMultiplicator(int x, int y){
 
 	const int index = x * (ChunkSizeY + 1) + y;
 	float NoiseValue = HeightMap[index];
-	if (NoiseSettings.UseFallof) {
-		if (NoiseSettings.Fallof != nullptr) {
-			const float FallofInfluence = NoiseSettings.Fallof->GetFloatValue(NoiseValue);
-			NoiseValue = NoiseValue * (NoiseSettings.HeightMultiplicator * FallofInfluence);
-		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Select a curve"));
-		}
+
+	if (NoiseSettings.Fallof != nullptr) {
+		const float FallofInfluence = NoiseSettings.Fallof->GetFloatValue(NoiseValue);
+		NoiseValue = NoiseValue * (NoiseSettings.HeightMultiplicator * FallofInfluence);
 	}
 	else {
 		NoiseValue = NoiseValue * NoiseSettings.HeightMultiplicator;
@@ -187,7 +182,7 @@ float ALandscapeChunk::ApplyHeightMultiplicator(int x, int y){
 		}
 	}
 
-	NoiseValueHeightUpdate.Broadcast(x, y, NoiseValue);
+	//NoiseValueHeightUpdate.Broadcast(x, y, NoiseValue, this);
 	HeightMap[index] = NoiseValue;
 
 	return NoiseValue;

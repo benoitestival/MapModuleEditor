@@ -10,14 +10,16 @@
  * 
  */
 class ALandscapeChunk;
+class ULandscapeManager;
 
-UCLASS()
+UCLASS(Abstract)
 class MAPGENERATOR_API UBaseLandscapeComponent : public UBaseMapComponent
 {
 	GENERATED_BODY()
 
 public:
 
-	virtual void Initialize(ALandscapeChunk* Chunk);
-	
+	virtual void Initialize(ALandscapeChunk* Chunk){};
+
+	virtual void Remove(ULandscapeManager* Manager){};
 };

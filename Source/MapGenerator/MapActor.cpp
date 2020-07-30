@@ -4,6 +4,9 @@
 #include "MapActor.h"
 #include "MapGenerator/Objects/BaseMapManager.h"
 #include "Utils/MapEditorUtils.h"
+#include "HeightMapLandscape/LandscapeManager.h"
+#include "HeightMapLandscape/Components/ErosionComponent.h"
+#include "Objects/BaseLandscapeComponent.h"
 
 // Sets default values
 AMapActor::AMapActor(){
@@ -63,4 +66,24 @@ void AMapActor::OnConstruction(const FTransform& Transform) {
 			}
 		}
 	}
+}
+
+
+void AMapActor::Erode() {
+
+	if (MapManager->IsA(ULandscapeManager::StaticClass())) {
+		ULandscapeManager* Manager = Cast<ULandscapeManager>(MapManager);
+		UErosionComponent* Comp = nullptr;
+		for (auto& Component : Manager->MapComponents) {
+			if (Component->IsA(UErosionComponent::StaticClass())) {
+				Comp = Cast<UErosionComponent>(Component);
+			}
+		}
+		if (Comp != nullptr) {
+			Comp->Manager = Manager;
+			Comp->ErodeTerrain();
+		}
+	}
+
+	
 }
