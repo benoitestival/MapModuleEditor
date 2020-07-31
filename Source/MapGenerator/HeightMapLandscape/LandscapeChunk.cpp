@@ -21,6 +21,7 @@ void ALandscapeChunk::Init() {
 	NoiseSettings.LoadNoiseSettings(ChunkX, ChunkY, Manager);
 	ChunkSizeX = Manager->ChunkSizeX;
 	ChunkSizeY = Manager->ChunkSizeY;
+	UseElevation = Manager->UseElevationScale;
 	for (auto Component : Manager->MapComponents) {
 		if(Component != nullptr) {
 			Component->Initialize(this);
@@ -181,10 +182,14 @@ float ALandscapeChunk::ApplyHeightMultiplicator(int x, int y){
 			NoiseValue = NoiseSettings.SeaLevel;
 		}
 	}
-
-	//NoiseValueHeightUpdate.Broadcast(x, y, NoiseValue, this);
-	HeightMap[index] = NoiseValue;
-
+	
+	if (UseElevation && !AlreadyElev) {
+		HeightMap[index] = NoiseValue;
+		AlreadyElev = true;
+	}
+	if (!UseElevation) {
+		AlreadyElev = false;
+	}
 	return NoiseValue;
 }
 

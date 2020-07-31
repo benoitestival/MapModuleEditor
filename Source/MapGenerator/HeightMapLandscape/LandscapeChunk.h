@@ -99,6 +99,12 @@ public:
 
 	UPROPERTY()
 	int ChunkSizeY;
+
+	UPROPERTY()
+	bool UseElevation;
+
+	UPROPERTY()
+	bool AlreadyElev = false;
 	
 	UPROPERTY()
 	FNoiseSettings NoiseSettings;

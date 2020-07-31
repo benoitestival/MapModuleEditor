@@ -31,6 +31,15 @@ struct FDroplet {
 
 	UPROPERTY()
 	float OffsetToGridY = 0.0f;
+
+	UPROPERTY()
+	float Sediment = 0.0f;
+
+	UPROPERTY()
+	float Speed = 0.0f;
+
+	UPROPERTY()
+	float Water = 0.0f;
 };
 
 
@@ -57,11 +66,14 @@ public:
 	int NumberOfChunkImpacted = 1;
 
 	UPROPERTY(EditAnywhere)
-	int NbrIterations = 10;
-
-	UPROPERTY(EditAnywhere)
 	bool DrawDroplets = false;
 
+	UPROPERTY(EditAnywhere)
+	float ErosionRadius = 3;
+	
+	UPROPERTY(EditAnywhere)
+	int NbrIterations = 50000;
+	
 	UPROPERTY(EditAnywhere)
 	int MaxDropletLifeTime = 30;
 
@@ -69,13 +81,28 @@ public:
 	float Inertia = 0.05f;
 
 	UPROPERTY(EditAnywhere)
-	float gravity = 4.0f;
+	float Gravity = 2.0f;
 	
 	UPROPERTY(EditAnywhere)
 	float InitialSpeed = 1.0f;
 
 	UPROPERTY(EditAnywhere)
 	float InitialWater = 1.0f;
+
+	UPROPERTY(EditAnywhere)
+	float MinSedimentCapacity = 0.01f;
+
+	UPROPERTY(EditAnywhere)
+	float EvaporateSpeed = 0.01f;
+
+	UPROPERTY(EditAnywhere)
+	float DepositSpeed = 0.1f; 
+
+	UPROPERTY(EditAnywhere)
+	float ErodeSpeed = 0.1f;
+	
+	UPROPERTY(EditAnywhere)
+	float SedimentCapacityFactor = 4;
 	
 public:
 

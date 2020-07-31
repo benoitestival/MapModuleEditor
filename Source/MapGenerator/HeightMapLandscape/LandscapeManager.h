@@ -80,7 +80,7 @@ public:
 	float Scale = 1.0f;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	float SeaLevel = 0.0f;
+	float SeaLevel = -1000000.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	UCurveFloat* Fallof;
@@ -104,8 +104,11 @@ public:
 	bool AddNormals = true;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
-	bool AddUVs = true;
+	bool AddUVs = false;
 
+	UPROPERTY(EditAnywhere)
+	bool UseElevationScale = true;
+	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
 	bool DrawGrid = false;
 	

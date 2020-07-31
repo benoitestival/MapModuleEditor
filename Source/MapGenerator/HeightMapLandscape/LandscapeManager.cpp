@@ -16,7 +16,7 @@ ULandscapeManager::ULandscapeManager() {
 
 	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TerrainMaterial(TEXT("Material'/Game/Material/TerrainMaterial.TerrainMaterial'"));
 	if (TerrainMaterial.Succeeded()) {
-		Material = TerrainMaterial.Object;
+		//Material = TerrainMaterial.Object;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> FalloffCurve(TEXT("CurveFloat'/Game/Helpers/FallofCurve.FallofCurve'"));
