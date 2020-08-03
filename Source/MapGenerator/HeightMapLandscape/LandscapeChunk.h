@@ -129,10 +129,11 @@ public:
 
 	void Init();
 	
-	void GenerateMesh();
+	void GenerateMesh(bool UseRawHeightMap);
 	void GenerateNoiseMap();
 
-	float ApplyHeightMultiplicator(int x, int y);
+	float ApplyHeightMultiplicatorByCoord(int x, int y);
+	float ApplyHeightMultiplicator(float Value);
 
 	float CalculateFallofMap(int x, int y);
 	// Called every frame

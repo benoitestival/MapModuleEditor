@@ -69,13 +69,13 @@ public:
 	bool DrawDroplets = false;
 
 	UPROPERTY(EditAnywhere)
-	float ErosionRadius = 3;
+	float ErosionRadius = 5;
 	
 	UPROPERTY(EditAnywhere)
 	int NbrIterations = 50000;
 	
 	UPROPERTY(EditAnywhere)
-	int MaxDropletLifeTime = 30;
+	int MaxDropletLifeTime = 60;
 
 	UPROPERTY(EditAnywhere)
 	float Inertia = 0.05f;
@@ -96,10 +96,10 @@ public:
 	float EvaporateSpeed = 0.01f;
 
 	UPROPERTY(EditAnywhere)
-	float DepositSpeed = 0.1f; 
+	float DepositSpeed = 0.3f; 
 
 	UPROPERTY(EditAnywhere)
-	float ErodeSpeed = 0.1f;
+	float ErodeSpeed = 0.3f;
 	
 	UPROPERTY(EditAnywhere)
 	float SedimentCapacityFactor = 4;
@@ -114,7 +114,7 @@ public:
 	
 	static float CalculateDropletHeight(TArray<float>& CellCorners, FDroplet& Droplet);
 	static FVector2D CalculateDropletGradient(TArray<float>& CellCorners, FDroplet& Droplet);
-	bool IsDropletInValid(FDroplet& Droplet) const;
+	bool IsDropletValid(FDroplet& Droplet) const;
 
 	template<class T>
 	FORCEINLINE static T LinearInterpolation(T& A, T& B, float C) {

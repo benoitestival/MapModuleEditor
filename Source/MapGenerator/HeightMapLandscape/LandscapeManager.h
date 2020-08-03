@@ -106,7 +106,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Mesh")
 	bool AddUVs = false;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")
 	bool UseElevationScale = true;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | OtherParameters")

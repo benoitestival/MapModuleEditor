@@ -45,10 +45,10 @@ void UErosionComponent::ErodeTerrain() {
 
 			
 			
-			int NearestGridPointX = FMath::TruncToInt(Droplet.X);
-			int NearestGridPointY = FMath::TruncToInt(Droplet.Y);
+			const int NearestGridPointX = FMath::TruncToInt(Droplet.X);
+			const int NearestGridPointY = FMath::TruncToInt(Droplet.Y);
 
-			int DropletCellIndex = NearestGridPointX * MapSizeY + NearestGridPointY;
+			const int DropletCellIndex = NearestGridPointX * MapSizeY + NearestGridPointY;
 			
 			TArray<float> CellCornerDensities = TArray<float>();
 			GetCellDensities(DropletCellIndex, CellCornerDensities);
@@ -60,7 +60,7 @@ void UErosionComponent::ErodeTerrain() {
 			const float DropletHeight = UErosionComponent::CalculateDropletHeight(CellCornerDensities, Droplet);
 
 			if (DrawDroplets) {
-				FVector DropletPos = FVector(Droplet.X * Manager->CellResolution, Droplet.Y * Manager->CellResolution, DropletHeight);
+				FVector DropletPos = FVector(Droplet.X * Manager->CellResolution, Droplet.Y * Manager->CellResolution, Chunks[0]->ApplyHeightMultiplicator(DropletHeight));
 				DrawDebugPoint(UMapEditorUtils::GetActualWorld(), DropletPos, 10.0f, FColor::Red, false, 60);
 			}
 			
@@ -70,24 +70,11 @@ void UErosionComponent::ErodeTerrain() {
 			Droplet.X += Droplet.Direction.X;
 			Droplet.Y += Droplet.Direction.Y;
 			
-			if (!IsDropletInValid(Droplet)) {
+			if (IsDropletValid(Droplet)) {
 
-				const int NewNearestGridPointX = FMath::TruncToInt(Droplet.X);
-				const int NewNearestGridPointY = FMath::TruncToInt(Droplet.Y);
-				
-				//If the droplet is not in the same cell
-				if (NewNearestGridPointX != NearestGridPointX || NewNearestGridPointY != NearestGridPointY) {
-
-					NearestGridPointX = NewNearestGridPointX;
-					NearestGridPointY = NewNearestGridPointY;
-					
-					DropletCellIndex = NearestGridPointX * MapSizeY + NearestGridPointY;
-					
-					GetCellDensities(DropletCellIndex, CellCornerDensities);
-					
-					Droplet.OffsetToGridX = Droplet.X - NearestGridPointX;
-					Droplet.OffsetToGridY = Droplet.Y - NearestGridPointY;
-					
+				const int DropletActualIndex = FMath::TruncToInt(Droplet.X) * MapSizeY + FMath::TruncToInt(Droplet.Y);
+				if (DropletActualIndex != DropletCellIndex) {
+					GetCellDensities(DropletActualIndex, CellCornerDensities);
 				}
 				
 				const float DropletNewHeight = UErosionComponent::CalculateDropletHeight(CellCornerDensities, Droplet);
@@ -98,16 +85,21 @@ void UErosionComponent::ErodeTerrain() {
 				//TODO Erosion part
 				//////////////////
 				const float SedimentCapacity = FMath::Max(-DeltaHeight, MinSedimentCapacity) * Droplet.Speed * Droplet.Water * SedimentCapacityFactor;
-				float SedimentToDeposit = 0;
-
 				
 				if (Droplet.Sediment > SedimentCapacity || DeltaHeight > 0) {
 					//Add Sediment
 					
-					const float SedimentDeposit = (Droplet.Sediment - SedimentCapacity) * DepositSpeed;
-					/*if (DeltaHeight > 0) {
+					/*float SedimentDeposit = (Droplet.Sediment - SedimentCapacity) * DepositSpeed;
+					
+					if (Droplet.Sediment < SedimentCapacity) {
 						SedimentDeposit = FMath::Min(DeltaHeight, Droplet.Sediment);
 					}*/
+
+					float SedimentDeposit = FMath::Min(DeltaHeight, Droplet.Sediment);
+					if (Droplet.Sediment > SedimentCapacity) {
+						SedimentDeposit = (Droplet.Sediment - SedimentCapacity) * DepositSpeed;
+					}
+					
 					Chunks[0]->HeightMap[DropletCellIndex] += SedimentDeposit * (1 - Droplet.OffsetToGridX) * (1 - Droplet.OffsetToGridY);
 					Chunks[0]->HeightMap[DropletCellIndex + 1] += SedimentDeposit * Droplet.OffsetToGridX * (1 - Droplet.OffsetToGridY);
 					Chunks[0]->HeightMap[DropletCellIndex + MapSizeY] += SedimentDeposit * (1 - Droplet.OffsetToGridX) * Droplet.OffsetToGridY;
@@ -125,7 +117,7 @@ void UErosionComponent::ErodeTerrain() {
 					for (int x = NearestGridPointX - ErosionRadius; x < NearestGridPointX + ErosionRadius; x++) {
 						for (int y = NearestGridPointY - ErosionRadius; y < NearestGridPointY + ErosionRadius; y++) {
 
-							const float SquaredDist = (x - Droplet.X) * (x - Droplet.X) + (y - Droplet.Y) * (y - Droplet.Y);
+							const float SquaredDist = (x - NearestGridPointX) * (x - NearestGridPointX) + (y - NearestGridPointY) * (y - NearestGridPointY);
 							//const float Dist = FVector2D(x - Droplet.X, y - Droplet.Y).Size();
 
 							if (SquaredDist < ErosionRadius * ErosionRadius) {
@@ -158,7 +150,7 @@ void UErosionComponent::ErodeTerrain() {
 
 				}
 				
-				Droplet.Speed = FMath::Sqrt(FMath::Square(Droplet.Speed) + DeltaHeight * Gravity);
+				Droplet.Speed = FMath::Sqrt(Droplet.Speed * Droplet.Speed + DeltaHeight * Gravity);
 				Droplet.Water *= (1 - EvaporateSpeed);
 				///////////////////
 			}
@@ -169,7 +161,7 @@ void UErosionComponent::ErodeTerrain() {
 	}
 
 	for (auto Chunk :  Chunks) {
-		Chunk->GenerateMesh();
+		Chunk->GenerateMesh(false);
 	}
 }
 
@@ -217,6 +209,6 @@ float UErosionComponent::CalculateDropletHeight(TArray<float>& CellCorners, FDro
 }
 
 
-bool UErosionComponent::IsDropletInValid(FDroplet& Droplet) const{
-	return Droplet.X < 0 || Droplet.X >= MapSizeX - 1 || Droplet.Y < 0 || Droplet.Y >= MapSizeY - 1 || (Droplet.Direction.X == 0.0f && Droplet.Direction.Y == 0.0f);
+bool UErosionComponent::IsDropletValid(FDroplet& Droplet) const{
+	return Droplet.X >= 0 && Droplet.X < MapSizeX - 1 && Droplet.Y >= 0 && Droplet.Y < MapSizeY - 1 && (Droplet.Direction.X != 0.0f && Droplet.Direction.Y != 0.0f);
 }

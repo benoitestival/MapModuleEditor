@@ -28,10 +28,10 @@ void ALandscapeChunk::Init() {
 		}
 	}
 	GenerateNoiseMap();
-	GenerateMesh();
+	GenerateMesh(false);
 }
 
-void ALandscapeChunk::GenerateMesh() {
+void ALandscapeChunk::GenerateMesh(bool UseRawHeightMap) {
 
 	URuntimeMeshProviderStatic* StaticProvider = NewObject<URuntimeMeshProviderStatic>(this);
 	if (StaticProvider != nullptr) {
@@ -42,6 +42,8 @@ void ALandscapeChunk::GenerateMesh() {
 		const bool UseNormals = Manager->AddNormals;
 		const bool UseUvs = Manager->AddUVs;
 
+		//const bool UseElevationScale = Manager->UseElevationScale;
+		
 		const float CellResolution = Manager->CellResolution;
 		
 		TArray<FVector> Vertices;
@@ -61,7 +63,7 @@ void ALandscapeChunk::GenerateMesh() {
 		VerticesBottomLineCache.Reserve(ChunkSizeY + 1);
 		
 		for (int y = 0; y < ChunkSizeY + 1; y++) {
-			const FVector Vertice = FVector(0, y * CellResolution, ApplyHeightMultiplicator(0,y));
+			const FVector Vertice = FVector(0, y * CellResolution, UseRawHeightMap ? HeightMap[y] : ApplyHeightMultiplicatorByCoord(0, y));
 			VerticesBottomLineCache.Add(Vertices.Add(Vertice));
 			if (UseUvs) {
 				UVs.Add(FVector2D(0.0f, (float)y / (float)ChunkSizeY));
@@ -70,14 +72,14 @@ void ALandscapeChunk::GenerateMesh() {
 
 		for (int x = 0; x < ChunkSizeX; x++) {
 			
-			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, ApplyHeightMultiplicator(x + 1,0));
+			const FVector FirstTopLineVert = FVector((x + 1) * CellResolution, 0, UseRawHeightMap ? HeightMap[x * (ChunkSizeY + 1)] : ApplyHeightMultiplicatorByCoord(x + 1, 0));
 			if (UseUvs) {
 				UVs.Add(FVector2D((float)(x + 1) / (float)ChunkSizeX, 0.0f));
 			}
 			VerticesTopLineCache.Add(Vertices.Add(FirstTopLineVert));
 			
 			for (int y = 0; y < ChunkSizeY; y++) {
-				const FVector VerticeTopToAdd = FVector((x + 1) * CellResolution, (y + 1) * CellResolution, ApplyHeightMultiplicator(x + 1,y + 1));
+				const FVector VerticeTopToAdd = FVector((x + 1) * CellResolution, (y + 1) * CellResolution, UseRawHeightMap ? HeightMap[x * (ChunkSizeY + 1) + y] : ApplyHeightMultiplicatorByCoord(x + 1,y + 1) );
 				if (UseUvs) {
 					UVs.Add(FVector2D((float)(x + 1) / (float)ChunkSizeX, (float)(y + 1) / (float)ChunkSizeY));
 				}
@@ -140,8 +142,8 @@ void ALandscapeChunk::GenerateNoiseMap() {
 			float Amplitude = 1.0f;
 
 			for (int o = 0; o < NoiseSettings.NumOctaves; o++) {
-				const int NewX = (x + NoiseSettings.XOffset) / NoiseSettings.Scale * Frequency;
-				const int NewY = (y + NoiseSettings.YOffset) / NoiseSettings.Scale * Frequency;
+				const float NewX = ((float)x + (float)NoiseSettings.XOffset) / NoiseSettings.Scale * Frequency;
+				const float NewY = ((float)y + (float)NoiseSettings.YOffset) / NoiseSettings.Scale * Frequency;
 
 				const float Perlin = NoiseSettings.NoiseModule.GetPerlin(NewX, NewY);
 				if (ShowNoiseLog) {
@@ -166,32 +168,32 @@ void ALandscapeChunk::GenerateNoiseMap() {
 }
 
 
-
-float ALandscapeChunk::ApplyHeightMultiplicator(int x, int y){
+float ALandscapeChunk::ApplyHeightMultiplicatorByCoord(int x, int y) {
 
 	const int index = x * (ChunkSizeY + 1) + y;
 	float NoiseValue = HeightMap[index];
+	return ApplyHeightMultiplicator(NoiseValue);
+}
 
+
+float ALandscapeChunk::ApplyHeightMultiplicator(float Value){
+
+	
 	if (NoiseSettings.Fallof != nullptr) {
-		const float FallofInfluence = NoiseSettings.Fallof->GetFloatValue(NoiseValue);
-		NoiseValue = NoiseValue * (NoiseSettings.HeightMultiplicator * FallofInfluence);
+		const float FallofInfluence = NoiseSettings.Fallof->GetFloatValue(Value);
+		Value = Value * (NoiseSettings.HeightMultiplicator * FallofInfluence);
 	}
 	else {
-		NoiseValue = NoiseValue * NoiseSettings.HeightMultiplicator;
-		if (NoiseValue < NoiseSettings.SeaLevel) {
-			NoiseValue = NoiseSettings.SeaLevel;
+		Value = Value * NoiseSettings.HeightMultiplicator;
+		if (Value < NoiseSettings.SeaLevel) {
+			Value = NoiseSettings.SeaLevel;
 		}
 	}
 	
-	if (UseElevation && !AlreadyElev) {
-		HeightMap[index] = NoiseValue;
-		AlreadyElev = true;
-	}
-	if (!UseElevation) {
-		AlreadyElev = false;
-	}
-	return NoiseValue;
+	return Value;
 }
+
+
 
 
 float ALandscapeChunk::CalculateFallofMap(int x, int y) {
