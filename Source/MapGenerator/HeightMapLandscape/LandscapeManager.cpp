@@ -45,7 +45,7 @@ void ULandscapeManager::Enter() {
 			for (int y = 0; y < NbrChunkX; y++) {
 
 				FVector Location = FVector(x * XSize, y * YSize, 0.0f);
-				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
+				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator(0.0f,0.0f,0.0f));
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
 				LandscapeChunk->Init();
@@ -117,7 +117,7 @@ void ULandscapeManager::Construct() {
 			//If the new array is bigger in Y size need to add missing elements (possibly 0 iteration in this under scope)
 			for (int y = CopyY; y < NbrChunkY; y++) {
 				FVector Location = FVector(x * XSize, y * YSize, 0.0f);
-				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
+				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator(0.0f, 0.0f, 0.0f));
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
 				LandscapeChunk->Init();
@@ -134,7 +134,7 @@ void ULandscapeManager::Construct() {
 		for (int x = CopyX; x < NbrChunkX; x++) {
 			for (int y = 0; y < NbrChunkY; y++) {
 				FVector Location = FVector(x * XSize, y * YSize, 0.0f);
-				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator());
+				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator(0.0f, 0.0f, 0.0f));
 				LandscapeChunk->ChunkX = x;
 				LandscapeChunk->ChunkY = y;
 				LandscapeChunk->Init();
