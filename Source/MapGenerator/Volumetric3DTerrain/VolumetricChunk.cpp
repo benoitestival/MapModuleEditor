@@ -48,8 +48,9 @@ void AVolumetricChunk::Initialize(UVolumetric3DTerrainManager* _Manager) {
 	Manager = _Manager;
 	NumElementsSide = FMath::Pow(2, MaxDepth);
 	Octree = NewObject<UArrayOctree>();
-	const float HalfSize = NumElementsSide * Elementize * 0.5;
-	const FVector Position = GetActorLocation() + HalfSize;
+	const float Axissize = NumElementsSide * Elementize;
+	const float HalfSize = Axissize * 0.5;
+	const FVector Position = FVector(ChunkX * Axissize, ChunkY * Axissize, ChunkZ * Axissize) + HalfSize;
 	Octree->Initialize(HalfSize, Elementize, MaxDepth, Position);
 
 	//Generate NoiseMap and insert in octree
@@ -63,9 +64,14 @@ void AVolumetricChunk::GenerateAndInsertNoiseMap(){
 
 	if (Octree != nullptr) {
 		UNoiseComponent::Init();
-		for (int x = 0; x < NumElementsSide; x++) {
-			for (int y = 0; y < NumElementsSide; y++) {
-				for (int z = 0; z < NumElementsSide; z++) {
+
+		const int StartX = ChunkX * NumElementsSide;
+		const int StartY = ChunkY * NumElementsSide;
+		const int StartZ = ChunkZ * NumElementsSide;
+		
+		for (int x = StartX; x < NumElementsSide + StartX; x++) {
+			for (int y = StartY; y < NumElementsSide + StartY; y++) {
+				for (int z = StartZ; z < NumElementsSide + StartZ; z++) {
 					Octree->InsertDataAtAxisValue(x, y, z, UNoiseComponent::GetPerlin(x, y, z));
 				}
 			}

@@ -12,15 +12,15 @@ void UNoiseComponent::Init() {
 
 float UNoiseComponent::GetPerlin(int x, int y, int z) {
 
-	float Noise = z - NoiseModule.GetNoise(x, y) * 10.0f - (10.0f / 2.0f);
+	float Noise = z - NoiseModule.GetNoise(x, y) * 100.0f - (100.0f / 2.0f);
 	
-	if (Noise > 10.0f) {
-		Noise = 10.0f;
+	if (Noise > 100.0f) {
+		Noise = 100.0f;
 	}
-	if (Noise < -10.0f) {
-		Noise = -10.0f;
+	if (Noise < -100.0f) {
+		Noise = -100.0f;
 	}
-	Noise /= 10;
+	Noise /= 100;
 
 	if (Noise < -1) {
 		Noise = -1;

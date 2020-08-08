@@ -17,8 +17,17 @@ class MAPGENERATOR_API UVolumetric3DTerrainManager : public UBaseMapManager
 	
 public:
 
+	UPROPERTY(EditAnywhere, Category="VolumetricManager | Grid Parameters")
+	int NbrChunkX = 5;
+
+	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Grid Parameters")
+	int NbrChunkY = 5;
+
+	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Grid Parameters")
+	int NbrChunkZ = 5;
+	
 	UPROPERTY(EditAnywhere, Category= "VolumetricManager | Octree")
-	int MaxDepth = 2;
+	int MaxDepth = 4;
 
 	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Octree")
 	float Elementize = 80.0f;

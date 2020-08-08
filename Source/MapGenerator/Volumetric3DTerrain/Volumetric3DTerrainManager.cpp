@@ -14,12 +14,27 @@ UVolumetric3DTerrainManager::UVolumetric3DTerrainManager() {
 void UVolumetric3DTerrainManager::Enter() {
 	Super::Enter();
 	UE_LOG(LogTemp, Warning, TEXT("Volumetric Terrain : Enter"));
-	/*if (!Initialized) {
-		Initialized = true;*/
-		AVolumetricChunk* Chunk = UMapEditorUtils::GetActualWorld()->SpawnActor<AVolumetricChunk>(AVolumetricChunk::StaticClass(), FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
-		Chunk->Initialize(this);
-		Chunks.Add(Chunk);
-	//}
+
+	const float ElementAxisNum = FMath::Pow(2, MaxDepth);
+	
+	const float XSize = ElementAxisNum * Elementize;
+	const float YSize = ElementAxisNum * Elementize;
+	const float ZSize = ElementAxisNum * Elementize;
+
+	for (int x = 0; x < NbrChunkX; x++) {
+		for (int y = 0; y < NbrChunkY; y++) {
+			for (int z = 0; z < NbrChunkZ; z++) {
+
+				FVector Location = FVector(x * XSize, y * YSize, z * ZSize);
+				AVolumetricChunk* Chunk = UMapEditorUtils::GetActualWorld()->SpawnActor<AVolumetricChunk>(AVolumetricChunk::StaticClass(), Location, FRotator(0.0f, 0.0f, 0.0f));
+				Chunk->ChunkX = x;
+				Chunk->ChunkY = y;
+				Chunk->ChunkZ = z;
+				Chunk->Initialize(this);
+				Chunks.Add(Chunk);
+			}
+		}
+	}
 	
 }
 

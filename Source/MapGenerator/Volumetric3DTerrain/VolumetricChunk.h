@@ -18,6 +18,15 @@ class MAPGENERATOR_API AVolumetricChunk : public AActor
 public:
 
 	UPROPERTY()
+	int ChunkX;
+
+	UPROPERTY()
+	int ChunkY;
+
+	UPROPERTY()
+	int ChunkZ;
+	
+	UPROPERTY()
 	int MaxDepth;
 
 	UPROPERTY()

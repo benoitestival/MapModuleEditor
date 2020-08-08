@@ -42,7 +42,7 @@ void ULandscapeManager::Enter() {
 		Chunks.Reserve(NbrChunkX * NbrChunkY);
 
 		for (int x = 0; x < NbrChunkX; x++) {
-			for (int y = 0; y < NbrChunkX; y++) {
+			for (int y = 0; y < NbrChunkY; y++) {
 
 				FVector Location = FVector(x * XSize, y * YSize, 0.0f);
 				ALandscapeChunk* LandscapeChunk = UMapEditorUtils::GetActualWorld()->SpawnActor<ALandscapeChunk>(ALandscapeChunk::StaticClass(), Location, FRotator(0.0f,0.0f,0.0f));

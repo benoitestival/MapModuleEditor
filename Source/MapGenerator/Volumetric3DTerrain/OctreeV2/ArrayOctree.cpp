@@ -24,7 +24,7 @@ void UArrayOctree::Initialize(float _Size, float _MinElemSpace, int MaxDepth, FV
 	int StartIndexOfPreviousDepth = 0;
 	int NextDepthPass = 9;
 
-	float ActualSize = Size * 0.5f;
+	float ActualSize = Size;
 	
 	for (int i = 1; i < OctreeSize; i++) {
 
@@ -40,8 +40,9 @@ void UArrayOctree::Initialize(float _Size, float _MinElemSpace, int MaxDepth, FV
 
 		const int ParentNodeIndex = StartIndexOfPreviousDepth + (i - StartIndexOfActualDepth) / 8;
 		const int IndexOffsetForChildPostion = (i - StartIndexOfActualDepth) % 8;
+		const FVector NodePos = Nodes[ParentNodeIndex]->NodePosition + UOctreeUtils::OctreeSizeOffsets[IndexOffsetForChildPostion] * ActualSize;
 		
-		Node->Initialize(ActualSize, -1.0f, CurrentDepth, i,Node[ParentNodeIndex].NodePosition + UOctreeUtils::OctreeSizeOffsets[IndexOffsetForChildPostion] * ActualSize);
+		Node->Initialize(ActualSize * 0.5f, -1.0f, CurrentDepth, i, NodePos);
 		Nodes.Add(Node);
 	}
 }
@@ -79,6 +80,7 @@ void UArrayOctree::UpdateStateToParent(int ParentIndex, TEnumAsByte<EState> Chil
 			}
 			if (NeedStateChange) {
 				Nodes[ParentIndex]->State = ChildNewState;
+				//TODO Need To Change the value too
 			}
 		}
 	}
