@@ -51,7 +51,7 @@ bool UArrayOctreeNode::IsNodeAFinalLeaf() const {
 }
 
 void UArrayOctreeNode::DrawNode() const{
-	const float Thickness = 15 - Depth * 2;
+	const float Thickness = 50 - Depth * 2;
 
 	const FVector PostionLeftBackBottom = NodePosition - Size + Thickness;
 	const FVector PostionRightBackBottom = FVector(NodePosition.X - Size + Thickness, NodePosition.Y + Size - Thickness, NodePosition.Z - Size + Thickness);

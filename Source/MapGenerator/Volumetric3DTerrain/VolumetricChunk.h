@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "RuntimeMeshActor.h"
 #include "VolumetricChunk.generated.h"
 
 class UOctree;
@@ -11,7 +12,7 @@ class UArrayOctree;
 class UVolumetric3DTerrainManager;
 
 UCLASS()
-class MAPGENERATOR_API AVolumetricChunk : public AActor
+class MAPGENERATOR_API AVolumetricChunk : public ARuntimeMeshActor
 {
 	GENERATED_BODY()
 	
@@ -60,4 +61,6 @@ public:
 
 	void Initialize(UVolumetric3DTerrainManager* _Manager);
 	void GenerateAndInsertNoiseMap();
+	void MarchOctree();
+	void AlternativeMarchOctree();
 };

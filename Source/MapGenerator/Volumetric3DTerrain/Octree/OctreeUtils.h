@@ -17,7 +17,6 @@ public:
 	static TArray<FColor> OctreeColorDepth;
 	static bool InsertBitCommon[2];
 	static bool InsertBitNotCommon[2];
-	static int EdgeTables[256];
 	
 private:
 	static int OctreeMaxDepth;
