@@ -20,7 +20,7 @@ ULandscapeManager::ULandscapeManager() {
 	}
 
 	static ConstructorHelpers::FObjectFinder<UCurveFloat> FalloffCurve(TEXT("CurveFloat'/Game/Helpers/FallofCurve.FallofCurve'"));
-	if (TerrainMaterial.Succeeded()) {
+	if (FalloffCurve.Succeeded()) {
 		Fallof = FalloffCurve.Object;
 	}
 

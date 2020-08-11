@@ -318,7 +318,7 @@ int MarchingCubes::GetCellIndex(TArray<FCell>& Cell) {
 	int cubeIndex = 0;
 
 	for (int i = 0; i < Cell.Num(); i++) {
-		if (Cell[i].Node->Value < 0.5f) {
+		if (Cell[i].Node->Value > 0.5f) {
 			cubeIndex += pow(2, i);
 		}
 	}

@@ -5,9 +5,14 @@
 #include "Engine/World.h"
 #include "MapGenerator/Utils/MapEditorUtils.h"
 #include "MapGenerator/Volumetric3DTerrain/VolumetricChunk.h"
+#include "UObject/ConstructorHelpers.h"
 
 UVolumetric3DTerrainManager::UVolumetric3DTerrainManager() {
 	MapType = EMapType::Volumetric3DLandscape;
+	static ConstructorHelpers::FObjectFinder<UCurveFloat> FalloffCurve(TEXT("CurveFloat'/Game/Helpers/VolumetricCurve.VolumetricCurve'"));
+	if (FalloffCurve.Succeeded()) {
+		Fallof = FalloffCurve.Object;
+	}
 }
 
 
