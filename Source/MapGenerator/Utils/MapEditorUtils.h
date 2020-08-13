@@ -10,6 +10,7 @@
 class UEditorGameMode;
 class UBaseMapManager;
 class UVolumetric3DTerrainManager;
+class UHeightMapPlanetManager;
 class ULandscapeManager;
 class AMapActor;
 
@@ -32,6 +33,7 @@ public:
 	static UBaseMapManager* GetActualMapManager();
 	static ULandscapeManager* TryGetLandscapeManager();
 	static UVolumetric3DTerrainManager* tryGetVolumetricTerrainManager();
+	static UHeightMapPlanetManager* TryGetHeightMapPlanetManager();
 
 	static UWorld* GetActualWorld();
 	

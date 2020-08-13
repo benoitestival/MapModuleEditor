@@ -46,7 +46,13 @@ public:
 	bool ApplyZToFunc = true;
 
 	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Noise")
+	bool GenerateFlatGround = false;
+	
+	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Noise")
 	bool Planet = false;
+
+	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Noise")
+	bool SplitPlanet = false;
 
 	UPROPERTY(EditAnywhere, Category = "VolumetricManager | Noise")
 	float PlanetRadius = 7000.0f;

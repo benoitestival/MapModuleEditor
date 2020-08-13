@@ -9,7 +9,8 @@
 UENUM(BlueprintType, Blueprintable)
 enum EMapType {
 	ProceduralLandscape = 0,
-	Volumetric3DLandscape = 1
+	ProceduralHMPlanet = 1,
+	Volumetric3DLandscape = 2
 };
 
 UENUM()

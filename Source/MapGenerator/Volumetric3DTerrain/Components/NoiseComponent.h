@@ -35,6 +35,9 @@ public:
 	static bool ApplyZ;
 	static float Height;
 	static bool Planet;
+	static bool SPlitPlanet;
+	static FVector VectorForSplit;
+	static bool Flat;
 	static float PlanetRadius;
 	static float MinElemSize;
 	static UCurveFloat* Curve;

@@ -7,6 +7,7 @@
 #include "MapGenerator/Objects/BaseMapManager.h"
 #include "MapGenerator/HeightMapLandscape/LandscapeManager.h"
 #include "MapGenerator/Volumetric3DTerrain/Volumetric3DTerrainManager.h"
+#include "MapGenerator/HeightMapPlanet/HeightMapPlanetManager.h"
 
 TEnumAsByte<EMapType> UMapEditorUtils::DefaultMapType = EMapType::ProceduralLandscape;
 TEnumAsByte<EMapType> UMapEditorUtils::ActualMapType = UMapEditorUtils::DefaultMapType;
@@ -19,9 +20,11 @@ bool UMapEditorUtils::IsRunning = false;
 void UMapEditorUtils::InitMapEditor() {
 	ManagerRegistry.Empty();//Just in case
 	ManagerRegistry.Add({EMapType::ProceduralLandscape}, {ULandscapeManager::StaticClass()});
+	ManagerRegistry.Add({EMapType::ProceduralHMPlanet}, {UHeightMapPlanetManager::StaticClass()});
 	ManagerRegistry.Add({EMapType::Volumetric3DLandscape}, {UVolumetric3DTerrainManager::StaticClass()});
 
 	ModeName.Add({ EMapType::ProceduralLandscape }, { "Landscape procedural" });
+	ModeName.Add({ EMapType::ProceduralHMPlanet }, { "HM Planet procedural" });
 	ModeName.Add({ EMapType::Volumetric3DLandscape }, { "Terrain Volumetric" });
 	IsRunning = true;
 	UEditorGameMode::Get();
@@ -52,6 +55,10 @@ ULandscapeManager* UMapEditorUtils::TryGetLandscapeManager() {
 
 UVolumetric3DTerrainManager* UMapEditorUtils::tryGetVolumetricTerrainManager() {
 	return Cast<UVolumetric3DTerrainManager>(UMapEditorUtils::GetActualMapManager());
+}
+
+UHeightMapPlanetManager * UMapEditorUtils::TryGetHeightMapPlanetManager() {
+	return Cast<UHeightMapPlanetManager>(UMapEditorUtils::GetActualMapManager());
 }
 
 UWorld* UMapEditorUtils::GetActualWorld() {

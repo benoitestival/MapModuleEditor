@@ -11,8 +11,10 @@ float UNoiseComponent::Height = 0.0f;
 float UNoiseComponent::Scale = 0.0001f;
 bool UNoiseComponent::ApplyZ = true;
 bool UNoiseComponent::Planet = false;
+bool UNoiseComponent::SPlitPlanet = false;
 float UNoiseComponent::PlanetRadius = 2000.0f;
 float UNoiseComponent::MinElemSize = 80.0f;
+FVector UNoiseComponent::VectorForSplit = FVector();
 UCurveFloat* UNoiseComponent::Curve = nullptr;
 int UNoiseComponent::NumOctaves = 3;
 float UNoiseComponent::Persistence = 0.1f;
@@ -21,6 +23,7 @@ float UNoiseComponent::DistGroundCave = 5.0f;
 float UNoiseComponent::HoleRadiusMax = 0.0f;
 float UNoiseComponent::HoleRadiusMin = 0.0f;
 TArray<FHole> UNoiseComponent::Holes = {};
+bool UNoiseComponent::Flat = false;
 
 void UNoiseComponent::Init() {
 	NoiseModule.SetNoiseType(NoiseType::Perlin);
@@ -38,9 +41,11 @@ void UNoiseComponent::Init() {
 			PlanetRadius = Manager->PlanetRadius;
 			MinElemSize = Manager->Elementize;
 			DistGroundCave = Manager->DistGroundToCave;
+			SPlitPlanet = Manager->SplitPlanet;
 			if (PlanetRadius > UOctreeUtils::GetOctreeSize()) {
 				PlanetRadius = UOctreeUtils::GetOctreeSize() * 0.5 - Manager->Elementize * 2;
 			}
+			VectorForSplit = (UOctreeUtils::GetOctreePosition() + FVector(100.0f,0.0f,0.0f)).GetSafeNormal();
 			HoleRadiusMax = Manager->MaxSizeHole;
 			HoleRadiusMin = Manager->MinSizeHole;
 			Holes.Empty();
@@ -48,6 +53,9 @@ void UNoiseComponent::Init() {
 				FHole NewHole = { FMath::VRand() * PlanetRadius + UOctreeUtils::GetOctreePosition() , FMath::FRandRange(HoleRadiusMin, HoleRadiusMax)};
 				Holes.Add(NewHole);
 			}
+		}
+		else {
+			Flat = Manager->GenerateFlatGround;
 		}
 		
 	}
@@ -82,7 +90,7 @@ float UNoiseComponent::GetPerlin(float x, float y, float z) {
 			for (auto& Hole : Holes) {
 				const float Dist = FVector::Dist(PointPos, Hole.Position);
 				if (Dist < Hole.Radius) {
-					NoiseValue = -100.0f;
+					NoiseValue = -1000.0f;
 				}
 			}
 		}
@@ -124,6 +132,21 @@ float UNoiseComponent::GetPerlin(float x, float y, float z) {
 	//Rescale Bettween 0 and 1;
 	NoiseValue = (NoiseValue + 1.0f) * 0.5f;
 
+	if (!Planet && Flat) {
+		if (z == 0) {
+			NoiseValue = 1.0f;
+		}
+	}
 
+	if (Planet && SPlitPlanet) {
+		const float HalfSize = MinElemSize * 0.5f;
+		const FVector PointPos = FVector(x * MinElemSize + HalfSize, y * MinElemSize + HalfSize, z * MinElemSize + HalfSize);
+		const FVector VectorPoint = (PointPos - UOctreeUtils::GetOctreePosition()).GetSafeNormal();
+		const float Dot = FVector::DotProduct(VectorForSplit, VectorPoint);
+		if (Dot < 0.0f) {
+			NoiseValue = -1.0f;
+		}
+	}
+	
 	return NoiseValue;
 }
