@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MapGenerator/Objects/BaseMapManager.h"
+#include "Curves/CurveFloat.h"
 #include "HeightMapPlanetManager.generated.h"
 
 /**
@@ -26,12 +27,38 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
 	float ElemSize = 80.0f;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	TArray<float> Offsets;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	float PlanetRadius = 3000.0f;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	float Scale = 0.5f;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	float height = 500.0f;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	float Persistance = 0.1f;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	float Lacunarity = 5.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	bool ShowCube = false;
+
+	UPROPERTY(EditAnywhere, Category = "HeightMapPlanetManager | Planet")
+	UCurveFloat* Curve;
 	
 	UPROPERTY(VisibleAnywhere, Category = "HeightMapPlanetManager | Planet")
 	AHeightMapPlanet* Planet;
 	
 public:
 
+	UHeightMapPlanetManager();
+	
 	virtual void Enter() override;
 
 	virtual void Leave() override;

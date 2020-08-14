@@ -114,6 +114,16 @@ void ALandscapeChunk::GenerateMesh(bool UseRawHeightMap) {
 			VerticesTopLineCache.Empty();
 		}
 
+		const int x = ChunkSizeX - 1;
+		for (int y = 0; y < ChunkSizeY; y++) {
+			int index = x * ChunkSizeY + y;
+			const FVector AB = Vertices[VerticesBottomLineCache[y + 1]] - Vertices[VerticesBottomLineCache[y]];
+			const FVector AC = Vertices[index] - Vertices[VerticesBottomLineCache[y]];
+			const FVector NormalForBottom = FVector::CrossProduct(AB, AC);
+			Normals[VerticesBottomLineCache[y]] = NormalForBottom.GetSafeNormal();
+		}
+		
+
 		StaticProvider->SetupMaterialSlot(0, TEXT("TriMat"), Manager->Material);
 		StaticProvider->CreateSectionFromComponents(0,0,0,Vertices, Triangles, Normals, UVs, Colors, Tangents, ERuntimeMeshUpdateFrequency::Infrequent, false);
 		
@@ -145,18 +155,40 @@ void ALandscapeChunk::GenerateNoiseMap() {
 				const float NewX = ((float)x + (float)NoiseSettings.XOffset) / NoiseSettings.Scale * Frequency;
 				const float NewY = ((float)y + (float)NoiseSettings.YOffset) / NoiseSettings.Scale * Frequency;
 
-				const float Perlin = NoiseSettings.NoiseModule.GetPerlin(NewX, NewY);
+				float Perlin = NoiseSettings.NoiseModule.GetPerlin(NewX, NewY);
 				if (ShowNoiseLog) {
 					UE_LOG(LogTemp, Warning, TEXT("Original Perlin Value : %f, for x: %d and y: %d"), Perlin, x, y);
 				}
 				
+				
+				switch (NoiseSettings.NoiseModif) {
+					case ENoiseModification::ERidged:
+						Perlin = 1.0f - FMath::Abs(Perlin);
+						break;
+					case ENoiseModification::EBillow:
+						Perlin = FMath::Abs(Perlin);
+						break;
+					default:
+						break;
+				}
+
 				NoiseValue += Perlin * Amplitude;
+				
 				FMath::Clamp(NoiseValue, -1.0f, 1.0f);
 				Amplitude *= NoiseSettings.Persistance;
 				Frequency *= NoiseSettings.Lacunarity;
 			}
 			
-			NoiseValue = (NoiseValue + 1) * 0.5;			
+			NoiseValue = (NoiseValue + 1) * 0.5;
+
+			switch (NoiseSettings.NoiseModif) {
+			case ENoiseModification::ETerraces:
+				NoiseValue = (float)FMath::RoundToInt(NoiseValue * (float)NoiseSettings.NumTerraces) / (float)NoiseSettings.NumTerraces;
+				break;
+			default:
+				break;
+			}
+			
 			HeightMap.Add(NoiseValue);
 
 		}

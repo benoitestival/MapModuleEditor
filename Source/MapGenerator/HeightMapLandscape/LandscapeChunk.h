@@ -54,6 +54,12 @@ struct FNoiseSettings {
 	TEnumAsByte<ETerrainType> Type;
 
 	UPROPERTY()
+	TEnumAsByte<ENoiseModification> NoiseModif;
+
+	UPROPERTY()
+	int NumTerraces;
+	
+	UPROPERTY()
 	int IslandSize;
 
 	UPROPERTY()
@@ -76,7 +82,9 @@ struct FNoiseSettings {
 		//UseFallof = _Manager->UseFallof;
 		Fallof = _Manager->Fallof;
 		//Type = _Manager->TerrainType;
-		IslandSize = _Manager->IslandSizeInChunks;
+		//IslandSize = _Manager->IslandSizeInChunks;
+		NoiseModif = _Manager->NoiseModif;
+		NumTerraces = _Manager->NumTerraces;
 	}
 };
 

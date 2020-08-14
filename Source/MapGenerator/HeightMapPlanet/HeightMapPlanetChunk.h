@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "RuntimeMeshActor.h"
+#include "MapGenerator/Noise/FastNoise.h"
 #include "HeightMapPlanetChunk.generated.h"
 
 class AHeightMapPlanet;
@@ -33,11 +34,29 @@ public:
 	float ElemSize;
 
 	UPROPERTY()
+	float Offset;
+
+	UPROPERTY()
+	float Scale;
+
+	UPROPERTY()
+	float Persistance;
+
+	UPROPERTY()
+	float Lacunarity;
+
+	UPROPERTY()
 	float ChunkTotalHalfSize;
 
+	UPROPERTY()
+	UCurveFloat* Curve;
+
+	FastNoise Noise;
 public:
 
 	void Initialize(AHeightMapPlanet* _Owner, FVector _ChunkOrientation);
 
+	float CalculateNoise(float x, float y, float z);
+	
 	void GenerateChunk();
 };

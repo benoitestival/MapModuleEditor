@@ -24,7 +24,20 @@ void AHeightMapPlanetChunk::GenerateChunk() {
 	ChunkTotalHalfSize = ChunkSize * ElemSize * 0.5f;//Potentially bug
 	const FVector PlanetCenter = PlanetOwner->PlanetCenter;
 
-	const float radius = 10000.0f;
+	const float radius = PlanetOwner->Manager->PlanetRadius;
+	const bool ShowCube = PlanetOwner->Manager->ShowCube;
+
+	Scale = PlanetOwner->Manager->Scale;
+	if (Scale == 0.0f) {
+		Scale = 0.001f;
+	}
+	Noise.SetNoiseType(NoiseType::Perlin);
+
+	Persistance = PlanetOwner->Manager->Persistance;
+	Lacunarity = PlanetOwner->Manager->Lacunarity;
+	const float Height = PlanetOwner->Manager->height;
+
+	Curve = PlanetOwner->Manager->Curve;
 	
 	URuntimeMeshProviderStatic* StaticProvider = NewObject<URuntimeMeshProviderStatic>(this);
 	if (StaticProvider != nullptr) {
@@ -51,21 +64,31 @@ void AHeightMapPlanetChunk::GenerateChunk() {
 		for (int y = 0; y < ChunkSize; y++) {
 			const float Percent = ((float)y / (float)(ChunkSize - 1) - 0.5f) * 2.0f;//Percent between -1 and 1
 			const FVector VerticeCube = ChunkOrientation + -1.0f * ChunkAxisA + Percent * ChunkAxisB;
-			const FVector Vertice = (VerticeCube - PlanetCenter).GetSafeNormal(0.0f) * radius;
+			const FVector VerticeUnitSphere = (VerticeCube - PlanetCenter).GetSafeNormal(0.0f);
+			const float _Noise = CalculateNoise(VerticeUnitSphere.X, VerticeUnitSphere.Y, VerticeUnitSphere.Z);
+			const float NoiseHeight = _Noise * (Curve != nullptr ? Height * Curve->GetFloatValue(_Noise) : Height);
+			const FVector Vertice = VerticeUnitSphere * (radius + NoiseHeight) + Offset * ChunkOrientation;
 			VerticesBottomLineCache.Add(Vertices.Add(Vertice));
 		}
 
 		for (int x = 0; x < ChunkSize - 1; x++) {
-			const float PercentX = ((float)(x + 1) / (float)(ChunkSize - 1) - 0.5f) * 2.0f;//Percent between -1 and 1
+			const float PercentX =  ((float)(x + 1) / (float)(ChunkSize - 1) - 0.5f) * 2.0f;//Percent between -1 and 1
 			const FVector FirstVerticeCube = ChunkOrientation + PercentX * ChunkAxisA + -1.0f * ChunkAxisB;
-			const FVector FirstVertice = (FirstVerticeCube - PlanetCenter).GetSafeNormal(0.0f) * radius /** radius*/;
+			const FVector FirstVerticeUnitSphere = (FirstVerticeCube - PlanetCenter).GetSafeNormal(0.0f) ;
+			const float _Noise = CalculateNoise(FirstVerticeUnitSphere.X, FirstVerticeUnitSphere.Y, FirstVerticeUnitSphere.Z);
+			const float NoiseHeight = _Noise * (Curve != nullptr ? Height * Curve->GetFloatValue(_Noise) : Height);
+			const FVector FirstVertice = FirstVerticeUnitSphere * (radius + NoiseHeight) + Offset * ChunkOrientation;
 			VerticesTopLineCache.Add(Vertices.Add(FirstVertice));
 			
 			for (int y = 0; y < ChunkSize - 1; y++) {
 				const float PercentXPrim = ((float)(x + 1)/ (float)(ChunkSize - 1) - 0.5f) * 2.0f;//Percent between -1 and 1
 				const float PercentY = ((float)(y + 1 )/ (float)(ChunkSize - 1) - 0.5f) * 2.0f;//Percent between -1 and 1
 				const FVector VerticeCube = ChunkOrientation + PercentY * ChunkAxisB + PercentXPrim * ChunkAxisA;
-				const FVector Vertice = (VerticeCube - PlanetCenter).GetSafeNormal(0.0f) * radius/*radius*/;
+				const FVector VerticeUnitSphere = (VerticeCube - PlanetCenter).GetSafeNormal(0.0f);
+				float _noise = CalculateNoise(VerticeUnitSphere.X, VerticeUnitSphere.Y, VerticeUnitSphere.Z);
+				float noiseVal = _noise * (Curve != nullptr ? Height * Curve->GetFloatValue(_noise) : Height);
+				//UE_LOG(LogTemp, Warning, TEXT("NoiseValue : %f"), noiseVal);
+				const FVector Vertice =  VerticeUnitSphere * (radius + noiseVal) + Offset * ChunkOrientation;
 				VerticesTopLineCache.Add(Vertices.Add(Vertice));
 
 				Triangles.Add(VerticesBottomLineCache[y]);
@@ -106,4 +129,29 @@ void AHeightMapPlanetChunk::GenerateChunk() {
 		StaticProvider->CreateSectionFromComponents(0, 0, 0, Vertices, Triangles, Normals, UVs, Colors, Tangents, ERuntimeMeshUpdateFrequency::Infrequent, false);
 		
 	}
+}
+
+float AHeightMapPlanetChunk::CalculateNoise(float x, float y, float z) {
+
+	float NoiseValue = 0.0f;
+	float Frequency = 1.0f;
+	float Amplitude = 1.0f;
+	
+	for (int o = 0; o < 3; o++) {
+
+		const float NewX = x / Scale * Frequency;
+		const float NewY = y / Scale * Frequency;
+		const float NewZ = z / Scale * Frequency;
+
+		float Perlin = Noise.GetPerlin(NewX, NewY, NewZ);
+		
+		NoiseValue += Perlin * Amplitude;
+		Amplitude *= Persistance;
+		Frequency *= Lacunarity;
+	}
+	
+	NoiseValue = (NoiseValue + 1) * 0.5f;
+	
+	return NoiseValue;
+	
 }

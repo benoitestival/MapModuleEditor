@@ -18,6 +18,14 @@ enum ETerrainType{
 	Island = 1
 };
 
+UENUM()
+enum ENoiseModification {
+	ERidged = 0,
+	EBillow = 1,
+	ETerraces = 2,
+	ENone = 3,
+};
+
 USTRUCT()
 struct FProcLandscapeCache {
 
@@ -61,8 +69,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Grid Parameters")
 	float CellResolution = 80.0f;
 
-	/*UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	TEnumAsByte<ETerrainType> TerrainType = ETerrainType::InfinteLand;*/
+	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
+	TEnumAsByte<ENoiseModification> NoiseModif = ENoiseModification::ENone;
 	
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
 	float HeightMultiplicator = 30000.0f;
@@ -86,7 +94,7 @@ public:
 	UCurveFloat* Fallof;
 
 	UPROPERTY(EditAnywhere, Category = "LandScapeManager | Noise")
-	int IslandSizeInChunks = 2;
+	int NumTerraces = 5;
 
 	UPROPERTY(EditAnywhere, Instanced, Category="LandScapeManager | Components")
 	TArray<UBaseLandscapeComponent*> MapComponents;

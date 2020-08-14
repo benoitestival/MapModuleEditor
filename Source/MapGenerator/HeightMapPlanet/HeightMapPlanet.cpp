@@ -43,6 +43,8 @@ void AHeightMapPlanet::Initialize() {
 	ChunksOrientation.Add(FVector(-Height,0.0f,0.0f)),
 	ChunksOrientation.Add(FVector(0.0f,-Height,0.0f)),
 	ChunksOrientation.Add(FVector(0.0f,0.0f,-Height)),
+
+
 	
 	Manager = UMapEditorUtils::TryGetHeightMapPlanetManager();
 	if (Manager != nullptr) {
@@ -63,9 +65,20 @@ void AHeightMapPlanet::Initialize() {
 			}
 			
 		}
-		
-		for (auto Chunk : Chunks) {
-			Chunk->GenerateChunk();
+
+		for (int i = 0; i< Chunks.Num(); i++) {
+			if (Manager->Offsets.IsValidIndex(i)) {
+				Chunks[i]->Offset = Manager->Offsets[i];
+			}
+			Chunks[i]->GenerateChunk();
 		}
+		
 	}
+}
+
+void AHeightMapPlanet::Remove() {
+	for (auto Chunk : Chunks) {
+		UMapEditorUtils::GetActualWorld()->DestroyActor(Chunk);
+	}
+	Chunks.Empty();
 }
